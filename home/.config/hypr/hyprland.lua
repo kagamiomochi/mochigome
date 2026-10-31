@@ -4,8 +4,12 @@
 ----- If you want to add your own configuration without overriding the shell configuration, please write your code above this line. -----
 hl.on("hyprland.start", function ()
     hl.exec_cmd([[
-        if [ ! -f "$HOME/.local/state/omochi-shell/.setup_done" ]; then
+        if [ ! -f "$HOME/.local/state/omochi-shell/setup_done" ]; then
             "$DOTFILES_DIR/scripts/post-setup.sh"
+        fi
+
+        if [ ! -f "$HOME/.local/state/omochi-shell/vencord" ]; then
+            "$DOTFILES_DIR/scripts/vencord-watch.sh"
         fi
     ]]) end)
 require("conf/autostart")
