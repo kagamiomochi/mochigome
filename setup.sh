@@ -182,7 +182,13 @@ step_link_dotfiles() {
         local src="$1"
         local dst="$2"
         mkdir -p "$(dirname "$dst")"
-        ln -sfn "$src" "$dst"
+        if [ -d "$dst" ] && [ ! -L "$dst" ]; then
+            local backup="${dst}.bak.$(date +%s)"
+            echo "Backing up existing directory: $dst -> $backup"
+            mv "$dst" "$backup"
+        fi
+
+        ln -sfnT "$src" "$dst"
     }
 
     link "$DOTFILES_DIR/home/.omochi-Shell.zsh"    "$HOME/.omochi-Shell.zsh"
@@ -252,10 +258,6 @@ step_firewall_setup() {
     # Sunshine
     sudo ufw allow 47984,47989,47990,48010/tcp
     sudo ufw allow 47998,47999,48000,48002,48010,5353/udp
-    
-    # Sefirah
-    sudo ufw allow 5149:5169/tcp
-    sudo ufw allow 5149:5169/udp
 
     # Minecraft
     sudo ufw allow 25565/tcp # Java
@@ -270,8 +272,10 @@ step_theme_and_groups() {
 
 step_env_var() {
     local DOTFILES_DIR="$1"
-    sudo sed -i '/^DOTFILES_DIR=/d' /etc/environment
-    echo "DOTFILES_DIR=$DOTFILES_DIR" | sudo tee -a /etc/environment > /dev/null
+    mkdir -p ~/.config/environment.d/
+    touch ~/.config/environment.d/omochi-shell.conf
+    sed -i '/^DOTFILES_DIR=/d' "$HOME/.config/environment.d/omochi-shell.conf"
+    echo "DOTFILES_DIR=$DOTFILES_DIR" | tee -a "$HOME/.config/environment.d/omochi-shell.conf" > /dev/null
 }
 
 # ============================================================
