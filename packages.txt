@@ -129,6 +129,7 @@ go
 scrcpy
 android-tools
 android-udev
+spotify-launcher
 
 # AUR
 python-terminaltexteffects
