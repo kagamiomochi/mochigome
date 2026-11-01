@@ -7,7 +7,7 @@ sudo -v
 SUDO_KEEPALIVE_PID=$!
 
 BUILD_DIR=""
-LOG_FILE="/tmp/omochi-Shell-setup_$(date +%s).log"
+LOG_FILE="/tmp/mochigome-setup_$(date +%s).log"
 : > "$LOG_FILE"
 
 cleanup() {
@@ -191,8 +191,8 @@ step_link_dotfiles() {
         ln -sfnT "$src" "$dst"
     }
 
-    link "$DOTFILES_DIR/home/.omochi-Shell.zsh"    "$HOME/.omochi-Shell.zsh"
-    grep -Fxq 'source $HOME/.omochi-Shell.zsh' "$HOME/.zshrc" || echo 'source $HOME/.omochi-Shell.zsh' >> "$HOME/.zshrc"
+    link "$DOTFILES_DIR/home/.mochigome.zsh"    "$HOME/.mochigome.zsh"
+    grep -Fxq 'source $HOME/.mochigome.zsh' "$HOME/.zshrc" || echo 'source $HOME/.mochigome.zsh' >> "$HOME/.zshrc"
     link "$DOTFILES_DIR/home/.p10k.zsh" "$HOME/.p10k.zsh"
 
     shopt -s nullglob dotglob
@@ -270,9 +270,9 @@ step_theme_and_groups() {
 step_env_var() {
     local DOTFILES_DIR="$1"
     mkdir -p ~/.config/environment.d/
-    touch ~/.config/environment.d/omochi-shell.conf
-    sed -i '/^DOTFILES_DIR=/d' "$HOME/.config/environment.d/omochi-shell.conf"
-    echo "DOTFILES_DIR=$DOTFILES_DIR" | tee -a "$HOME/.config/environment.d/omochi-shell.conf" > /dev/null
+    touch ~/.config/environment.d/mochigome.conf
+    sed -i '/^DOTFILES_DIR=/d' "$HOME/.config/environment.d/mochigome.conf"
+    echo "DOTFILES_DIR=$DOTFILES_DIR" | tee -a "$HOME/.config/environment.d/mochigome.conf" > /dev/null
 }
 
 # ============================================================
@@ -300,7 +300,7 @@ reset_screen
 
 echo "The log is stored in $LOG_FILE."
 echo "Installation complete!"
-printf "Welcome to \e[1;33momochi-Shell\e[0m!\n"
+printf "Welcome to \e[1;33mmochigome\e[0m!\n"
 echo "The system will reboot in 10 seconds."
 echo "Press Ctrl+C to cancel."
 

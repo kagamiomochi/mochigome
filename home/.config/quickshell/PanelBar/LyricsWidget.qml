@@ -68,7 +68,7 @@ Item {
 
         var args = [
             "curl", "-s", "-m", "10",
-            "-H", "User-Agent: omochi-Shell/1.0 (https://github.com/kagamiomochi/omochi-Shell)",
+            "-H", "User-Agent: mochigome/1.0 (https://github.com/kagamiomochi/mochigome)",
             "--get"
         ]
 

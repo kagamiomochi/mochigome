@@ -32,6 +32,6 @@ hyprpm_add "https://github.com/virtcode/hypr-dynamic-cursors"
 
 
 sudo rm -f /etc/sudoers.d/post-setup-tmp
-mkdir -p "$HOME/.local/state/omochi-shell/"
-touch "$HOME/.local/state/omochi-shell/setup_done"
+mkdir -p "$HOME/.local/state/mochigome/"
+touch "$HOME/.local/state/mochigome/setup_done"
 hyprctl notify 5 3000 0 "Initial setup is complete"

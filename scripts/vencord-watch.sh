@@ -6,7 +6,7 @@
 set -u
 
 DISCORD_DIR="$HOME/.config/discord"
-STATE_DIR="$HOME/.local/state/omochi-shell/vencord"
+STATE_DIR="$HOME/.local/state/mochigome/vencord"
 DONE_FILE="$STATE_DIR/.done"
 
 mkdir -p "$STATE_DIR"
