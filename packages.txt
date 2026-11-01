@@ -1,3 +1,4 @@
+# needed
 hyprland
 hypridle
 hyprlock
@@ -7,7 +8,6 @@ fastfetch
 kitty
 wl-clipboard
 cliphist
-greetd
 quickshell
 playerctl
 keyd
@@ -45,23 +45,14 @@ sunshine
 gnome-themes-extra
 jq
 python-evdev
-ufw
-ufw-extras
-noto-fonts
-noto-fonts-cjk
-noto-fonts-emoji
-otf-monaspace
-otf-font-awesome
-nerd-fonts
-xdg-desktop-portal
-xdg-desktop-portal-gtk
-xdg-desktop-portal-hyprland
 qt6ct
 qt6-wayland
 uwsm
 llama-cpp
 ggml-cuda
 
+
+# system
 blueman
 bluez
 bluez-obex
@@ -74,6 +65,21 @@ pipewire
 pipewire-alsa
 pipewire-pulse
 wireplumber
+realtime-privileges
+
+ufw
+ufw-extras
+
+xdg-desktop-portal
+xdg-desktop-portal-gtk
+xdg-desktop-portal-hyprland
+
+noto-fonts
+noto-fonts-cjk
+noto-fonts-emoji
+otf-monaspace
+otf-font-awesome
+nerd-fonts
 
 exfatprogs
 unrar
@@ -88,11 +94,13 @@ reflector
 gnome-keyring
 libsecret
 
-libva-nvidia-driver
-
-
-gpu-screen-recorder-ui
+greetd
 greetd-tuigreet
+
+
+libva-nvidia-driver
+gpu-screen-recorder-ui
+
 
 # Selection
 code
@@ -110,7 +118,6 @@ rclone
 inkscape
 claude-desktop
 chatgpt-desktop-bin
-pear-desktop
 git-credential-oauth
 zen-browser-bin
 btrfs-assistant
@@ -126,9 +133,6 @@ uv
 npm
 opencode
 go
-scrcpy
-android-tools
-android-udev
 spotify-launcher
 
 # AUR
