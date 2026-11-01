@@ -12,7 +12,11 @@
           "name": "Ternary Bonsai 2 27B"
         },
         "unsloth/Qwen3.6-35B-A3B-MTP-GGUF:UD-Q4_K_M": {
-          "name": "Qwen 3.6 35B A3B"
+          "name": "Qwen 3.6 35B A3B",
+          "limit": {
+            "context": 65536,
+            "output": 32768
+          }
         }
       }
     }
