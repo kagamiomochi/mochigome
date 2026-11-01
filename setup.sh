@@ -205,9 +205,6 @@ step_link_dotfiles() {
     mkdir -p "$HOME/.config/qt6ct"
     sed "s|\$HOME|$HOME|g" "$DOTFILES_DIR/home/.config/qt6ct/qt6ct.conf.template" > "$HOME/.config/qt6ct/qt6ct.conf"
 
-    mkdir -p "$HOME/.config/YouTube Music"
-    sed "s|\$DOTFILES_DIR|$DOTFILES_DIR|g" "$DOTFILES_DIR/home/.config/YouTube Music/config.json.template" > "$HOME/.config/YouTube Music/config.json"
-
     link "$DOTFILES_DIR/home/.local/share/PrismLauncher" "$HOME/.local/share/PrismLauncher"
 
     LANG=C xdg-user-dirs-update --force
