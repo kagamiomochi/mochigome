@@ -1,7 +1,7 @@
 -- https://wiki.hypr.land/Configuring/Basics/Binds/
 local mainMod  = "SUPER"
 
-local fileManager = "thunar"
+local fileManager = "nemo"
 local browser = "zen-browser"
 local terminal = "kitty"
 local SystemMonitor = "btop"
