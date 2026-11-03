@@ -34,7 +34,6 @@ SPIN='_oO'
 LOG_LAST_LINE=0
 SCREEN_INITIALIZED=false
 
-# Construct a bar string (argument: percent)
 render_bar() {
     local percent="$1"
     local filled=$(( percent * BAR_WIDTH / 100 ))
@@ -42,39 +41,31 @@ render_bar() {
     printf '%s%s' "$(printf '#%.0s' $(seq 1 "$filled") 2>/dev/null)" "$(printf -- '-%.0s' $(seq 1 "$empty") 2>/dev/null)"
 }
 
-# Set up the terminal: reserve the bottom lines for a fixed box,
-# and make everything above it a scrolling region.
 init_screen() {
     TERM_LINES=$(tput lines 2>/dev/null || echo 24)
-    BOX_HEIGHT=3                                  # top border / content / bottom border
-    REGION_BOTTOM=$((TERM_LINES - BOX_HEIGHT - 1))  # -1 leaves a blank separator line
+    BOX_HEIGHT=3
+    REGION_BOTTOM=$((TERM_LINES - BOX_HEIGHT - 1))
     BOX_TOP=$((REGION_BOTTOM + 2))
 
     clear
-    printf '\033[1;%dr' "$REGION_BOTTOM"   # set scroll region to rows 1..REGION_BOTTOM
+    printf '\033[1;%dr' "$REGION_BOTTOM"
     tput cup 0 0
     SCREEN_INITIALIZED=true
 }
 
-# Restore normal terminal behavior (full-screen scrolling again).
 reset_screen() {
     $SCREEN_INITIALIZED || return 0
-    printf '\033[r'   # reset scroll region to the whole screen
+    printf '\033[r'
     tput cup $((TERM_LINES - 1)) 0
     echo ""
     SCREEN_INITIALIZED=false
 }
 
-# Append one line to the scrolling history area (log + completed steps).
-# Printing a newline while the cursor sits on the region's bottom row
-# scrolls only that region, leaving the fixed box untouched.
 append_history() {
     tput cup $((REGION_BOTTOM - 1)) 0
     printf '%s\033[K\n' "$1"
 }
 
-# Read any new lines appended to LOG_FILE since the last check and
-# push them into the scrolling history area.
 flush_new_log_lines() {
     local total_lines
     total_lines=$(wc -l < "$LOG_FILE" 2>/dev/null || echo 0)
@@ -86,7 +77,6 @@ flush_new_log_lines() {
     fi
 }
 
-# Redraw the fixed box at the bottom of the screen (outside the scroll region).
 draw_box() {
     local msg="$1" spin_char="$2" percent="$3" bar="$4"
     local box_text=" [$CURRENT_STEP/$TOTAL_STEPS] [$bar] ${percent}% $spin_char $msg "
@@ -99,9 +89,6 @@ draw_box() {
     tput cup $((BOX_TOP + 1)) 0; printf '└%s┘\033[K' "$border"
 }
 
-# Execute one step, keep the fixed box updated, and stream log output
-# into the scrolling area above it.
-# Usage: run_step "Display Message" command...
 run_step() {
     local msg="$1"
     shift
@@ -148,7 +135,158 @@ run_step() {
 }
 
 # ============================================================
-# Main Body of Each Step
+# Packages.txt Parser
+# ============================================================
+
+# Arrays to hold parsed data
+declare -a GROUP_NAMES=()
+declare -a GROUP_PACKAGES=()
+declare -a GROUP_COMMANDS=()
+declare -a GROUP_SELECTED=()
+
+parse_packages_file() {
+    local current_name=""
+    local current_packages=""
+    local current_commands=""
+
+    flush_group() {
+        if [ -n "$current_name" ]; then
+            GROUP_NAMES+=("$current_name")
+            GROUP_PACKAGES+=("$current_packages")
+            GROUP_COMMANDS+=("$current_commands")
+            GROUP_SELECTED+=(0)  # 0 = not yet selected
+        fi
+        current_name=""
+        current_packages=""
+        current_commands=""
+    }
+
+    while IFS= read -r line || [ -n "$line" ]; do
+        # Remove trailing whitespace/CR
+        line="${line%%$'\r'}"
+        line="$(echo "$line" | sed 's/[[:space:]]*$//')"
+
+        # Skip empty lines
+        [ -z "$line" ] && continue
+
+        # Check for Name header
+        if [[ "$line" =~ ^#\ Name:\ *(.+)$ ]]; then
+            flush_group
+            current_name="${BASH_REMATCH[1]}"
+            continue
+        fi
+
+        # Check for Commands header
+        if [[ "$line" =~ ^#\ Commands:\ *(.+)$ ]]; then
+            if [ -n "$current_commands" ]; then
+                current_commands+="; ${BASH_REMATCH[1]}"
+            else
+                current_commands="${BASH_REMATCH[1]}"
+            fi
+            continue
+        fi
+
+        # Skip other comments
+        if [[ "$line" =~ ^# ]]; then
+            continue
+        fi
+
+        # Regular package line
+        if [ -n "$current_packages" ]; then
+            current_packages+=$'\n'"$line"
+        else
+            current_packages="$line"
+        fi
+    done < "$PACKAGES_FILE"
+
+    flush_group
+}
+
+# ============================================================
+# Interactive Group Selection
+# ============================================================
+
+select_groups() {
+    echo ""
+    echo "========================================"
+    echo "  Package Group Selection"
+    echo "========================================"
+    echo ""
+
+    # Check if dialog is available
+    if command -v dialog &> /dev/null; then
+        select_groups_tui
+    else
+        select_groups_tui_fallback
+    fi
+}
+
+select_groups_tui() {
+    # Build items for dialog: "item_1 label_1 status_1" ...
+    local items=()
+    for i in "${!GROUP_NAMES[@]}"; do
+        items+=("$i" "${GROUP_NAMES[$i]}" "off")
+    done
+
+    # Show checklist dialog
+    local selected
+    selected=$(dialog --title "Package Selection" \
+        --checklist "Select groups to install:" \
+        20 60 11 \
+        "${items[@]}" \
+        3>&1 1>&2 2>&3)
+
+    local dialog_exit=$?
+
+    # Dialog was cancelled
+    if [ $dialog_exit -ne 0 ]; then
+        echo "Cancelled."
+        exit 1
+    fi
+
+    # Mark selected groups
+    for i in "${!GROUP_SELECTED[@]}"; do
+        GROUP_SELECTED[$i]=0
+    done
+    for idx in $selected; do
+        GROUP_SELECTED[$idx]=1
+    done
+
+    echo ""
+    echo "Selection complete. Starting installation..."
+    echo ""
+    sleep 1
+}
+
+select_groups_tui_fallback() {
+    echo "dialog not found. Using simple selection..."
+    echo ""
+    echo "Choose whether to install each group (Y/N):"
+    echo ""
+
+    local i=1
+    for name in "${GROUP_NAMES[@]}"; do
+        printf "  [%d] %s : " "$i" "$name"
+        read -r choice
+        choice="${choice^^}"
+        if [ "$choice" = "Y" ] || [ "$choice" = "YES" ]; then
+            GROUP_SELECTED[$((i - 1))]=1
+            echo "        -> Will install"
+        else
+            GROUP_SELECTED[$((i - 1))]=0
+            echo "        -> Skipped"
+        fi
+        i=$((i + 1))
+    done
+
+    echo ""
+    echo "Selection complete. Starting installation..."
+    echo ""
+    sleep 1
+}
+
+# ============================================================
+# Step Functions
 # ============================================================
 
 step_system_update() {
@@ -171,8 +309,31 @@ step_install_paru() {
     fi
 }
 
-step_install_packages() {
-    grep -Ev '^\s*($|#)' "$PACKAGES_FILE" | xargs -r paru -S --needed --noconfirm
+install_group_packages() {
+    local group_index="$1"
+    local packages="${GROUP_PACKAGES[$group_index]}"
+
+    if [ -z "$packages" ]; then
+        return 0
+    fi
+
+    echo "$packages" | xargs -r sudo paru -S --needed --noconfirm
+}
+
+run_group_commands() {
+    local commands="${GROUP_COMMANDS[$1]}"
+
+    if [ -z "$commands" ]; then
+        return 0
+    fi
+
+    # Split by semicolon and execute each command
+    IFS=';' read -ra cmd_array <<< "$commands"
+    for cmd in "${cmd_array[@]}"; do
+        cmd="$(echo "$cmd" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+        [ -z "$cmd" ] && continue
+        bash -c "$cmd"
+    done
 }
 
 step_link_dotfiles() {
@@ -208,6 +369,7 @@ step_link_dotfiles() {
     link "$DOTFILES_DIR/home/.local/share/PrismLauncher" "$HOME/.local/share/PrismLauncher"
 
     LANG=C xdg-user-dirs-update --force
+    gsettings set org.cinnamon.desktop.default-applications.terminal exec 'kitty'
 }
 
 step_system_symlinks() {
@@ -216,7 +378,7 @@ step_system_symlinks() {
     sudo ln -sfn "$DOTFILES_DIR/system/etc/pam.d/greetd"                         /etc/pam.d/greetd
     sudo ln -sfn "$DOTFILES_DIR/system/etc/greetd/config.toml"                   /etc/greetd/config.toml
     sudo cp "$DOTFILES_DIR/system/etc/systemd/system/automount-all.service"      /etc/systemd/system/
-    
+
     sudo mkdir -p /usr/local/bin
     sed "s/__USERNAME__/${USER}/g" "$DOTFILES_DIR/system/usr/local/bin/automount-all.sh.template" | sudo tee /usr/local/bin/automount-all.sh > /dev/null
     sudo chmod +x /usr/local/bin/automount-all.sh
@@ -224,11 +386,6 @@ step_system_symlinks() {
 
 step_sudo_feedback() {
     echo "Defaults pwfeedback" | sudo tee /etc/sudoers.d/pwfeedback
-}
-
-step_git_skip_worktree() {
-    local DOTFILES_DIR="$1"
-    git update-index --skip-worktree "$DOTFILES_DIR/home/.config/xfce4/xfconf/xfce-perchannel-xml/thunar.xml"
 }
 
 step_enable_services() {
@@ -248,17 +405,12 @@ EOF
     sudo visudo -c -f "$SUDOERS_FILE"
 }
 
-step_firewall_setup() { 
-    # Steam
+step_firewall_setup() {
     sudo ufw allow steam
-
-    # Sunshine
     sudo ufw allow 47984,47989,47990,48010/tcp
     sudo ufw allow 47998,47999,48000,48002,48010,5353/udp
-
-    # Minecraft
-    sudo ufw allow 25565/tcp # Java
-    sudo ufw allow 19132/udp # Bedrock
+    sudo ufw allow 25565/tcp
+    sudo ufw allow 19132/udp
 }
 
 step_theme_and_groups() {
@@ -276,25 +428,97 @@ step_env_var() {
 }
 
 # ============================================================
-# Run
+# Main Execution
 # ============================================================
 
 DOTFILES_DIR="$(cd "$(dirname "$0")" && pwd)"
 
+# Parse packages.txt
+parse_packages_file
+
+# Show groups and get selection
+select_groups
+
 init_screen
 
+# Step 1: System update
 run_step "Updating the system"                   step_system_update
+
+# Step 2: Install paru
 run_step "Installing paru"                       step_install_paru
-run_step "Installing packages"                   step_install_packages
-run_step "Linking dotfiles"                      step_link_dotfiles "$DOTFILES_DIR"
-run_step "Linking the system configuration file" step_system_symlinks "$DOTFILES_DIR"
-run_step "Configuring sudo feedback display"     step_sudo_feedback
-run_step "Applying Git skip settings"            step_git_skip_worktree "$DOTFILES_DIR"
-run_step "Enabling various services"             step_enable_services
-run_step "Initial setup is in progress"          step_post_setup_nopasswd
-run_step "Setting up the firewall"               step_firewall_setup
-run_step "Setting up the theme and user group"   step_theme_and_groups
-run_step "Setting environment variables"         step_env_var "$DOTFILES_DIR"
+
+# Steps 3~N: Install selected package groups
+GROUP_STEP_START=3
+for i in "${!GROUP_NAMES[@]}"; do
+    if [ "${GROUP_SELECTED[$i]}" -eq 1 ]; then
+        CURRENT_STEP=$((GROUP_STEP_START + i - 1))
+        local_percent=$(( CURRENT_STEP * 100 / TOTAL_STEPS ))
+        local_bar=$(render_bar "$local_percent")
+
+        {
+            echo ""
+            echo "===== Installing group: ${GROUP_NAMES[$i]} ====="
+        } >> "$LOG_FILE"
+
+        # Install packages for this group
+        ( install_group_packages "$i" >> "$LOG_FILE" 2>&1 ) &
+        pid=$!
+        j=0
+        while kill -0 "$pid" 2>/dev/null; do
+            j=$(( (j + 1) % ${#SPIN} ))
+            flush_new_log_lines
+            draw_box "Installing: ${GROUP_NAMES[$i]}" "${SPIN:$j:1}" "$local_percent" "$local_bar"
+            sleep 0.1
+        done
+        wait "$pid"
+
+        # Run post-install commands if any
+        if [ -n "${GROUP_COMMANDS[$i]}" ]; then
+            {
+                echo ""
+                echo "===== Running post-install commands for: ${GROUP_NAMES[$i]} ====="
+            } >> "$LOG_FILE"
+            ( run_group_commands "$i" >> "$LOG_FILE" 2>&1 ) &
+            pid2=$!
+            j=0
+            while kill -0 "$pid2" 2>/dev/null; do
+                j=$(( (j + 1) % ${#SPIN} ))
+                flush_new_log_lines
+                draw_box "Running commands: ${GROUP_NAMES[$i]}" "${SPIN:$j:1}" "$local_percent" "$local_bar"
+                sleep 0.1
+            done
+            wait "$pid2"
+        fi
+
+        CURRENT_STEP=$((CURRENT_STEP + 1))
+        append_history "✔ Installed: ${GROUP_NAMES[$i]}"
+    fi
+done
+
+# Re-calculate step numbers for remaining steps
+LAST_GROUP_STEP=$((GROUP_STEP_START + ${#GROUP_NAMES[@]} - 1))
+REMAINING_STEPS=(
+    "Linking dotfiles:step_link_dotfiles"
+    "Linking the system configuration file:step_system_symlinks"
+    "Configuring sudo feedback display:step_sudo_feedback"
+    "Enabling various services:step_enable_services"
+    "Initial setup is in progress:step_post_setup_nopasswd"
+    "Setting up the firewall:step_firewall_setup"
+    "Setting up the theme and user group:step_theme_and_groups"
+    "Setting environment variables:step_env_var"
+)
+
+for entry in "${REMAINING_STEPS[@]}"; do
+    IFS=':' read -r msg func_name <<< "$entry"
+    step_name="$func_name \$DOTFILES_DIR"
+    # Handle steps that need arguments
+    case "$func_name" in
+        step_link_dotfiles) run_step "$msg" "$func_name" "$DOTFILES_DIR" ;;
+        step_system_symlinks) run_step "$msg" "$func_name" "$DOTFILES_DIR" ;;
+        step_env_var) run_step "$msg" "$func_name" "$DOTFILES_DIR" ;;
+        *) run_step "$msg" "$func_name" ;;
+    esac
+done
 
 reset_screen
 

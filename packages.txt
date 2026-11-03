@@ -1,9 +1,5 @@
-# needed
-hyprland
-hypridle
-hyprlock
-hyprpicker
-hyprpm
+# Name: Required Core Packages
+dialog
 fastfetch
 kitty
 wl-clipboard
@@ -13,29 +9,6 @@ playerctl
 keyd
 libnotify
 easyeffects
-calf
-mda.lv2
-lsp-plugins-lv2
-x42-plugins-lv2
-zam-plugins-lv2
-thunar
-thunar-archive-plugin
-thunar-media-tags-plugin
-thunar-shares-plugin
-thunar-volman
-tumbler
-file-roller
-catfish
-gvfs
-gvfs-afc
-gvfs-dnssd
-gvfs-gphoto2
-gvfs-mtp
-gvfs-nfs
-gvfs-smb
-gvfs-wsdd
-ffmpegthumbnailer
-kimageformats
 awww
 kvantum
 fcitx5-im
@@ -48,32 +21,51 @@ python-evdev
 qt6ct
 qt6-wayland
 uwsm
-llama-cpp
-ggml-cuda
+nemo
+cinnamon-translations
+nemo-fileroller
+gnome-keyring
+libsecret
 
+# Name: Audio & Effects
+calf
+mda.lv2
+lsp-plugins-lv2
+x42-plugins-lv2
+zam-plugins-lv2
 
-# system
+# Name: Hyprland Ecosystem
+hyprland
+hypridle
+hyprlock
+hyprpicker
+hyprpm
+
+# Name: System Services
 blueman
 bluez
 bluez-obex
 bluez-utils
 bluez-libs
 bluez-hid2hci
-
 pavucontrol
 pipewire
 pipewire-alsa
 pipewire-pulse
 wireplumber
 realtime-privileges
-
 ufw
 ufw-extras
-
 xdg-desktop-portal
 xdg-desktop-portal-gtk
 xdg-desktop-portal-hyprland
+greetd
+greetd-tuigreet
+snap-pac
+snapper
+reflector
 
+# Name: Fonts
 noto-fonts
 noto-fonts-cjk
 noto-fonts-emoji
@@ -81,51 +73,19 @@ otf-monaspace
 otf-font-awesome
 nerd-fonts
 
+# Name: File Tools
 exfatprogs
 unrar
 unzip
 zip
 7zip
 
-snap-pac
-snapper
-reflector
-
-gnome-keyring
-libsecret
-
-greetd
-greetd-tuigreet
-
-
+# Name: GPU & Video
 libva-nvidia-driver
 gpu-screen-recorder-ui
 
-
-# Selection
-code
-discord
-docker
-docker-compose
-gamescope
-jellyfin-server
-jellyfin-web
-prismlauncher
-steam
-proton-cachyos-slr
-yt-dlp
-rclone
-inkscape
-claude-desktop
-chatgpt-desktop-bin
+# Name: Development Tools
 git-credential-oauth
-zen-browser-bin
-btrfs-assistant
-loupe
-video-trimmer
-celluloid
-gnome-disk-utility
-btop
 jdk-openjdk
 nano
 nano-syntax-highlighting
@@ -133,17 +93,45 @@ uv
 npm
 opencode
 go
-spotify-launcher
-
-# AUR
+btop
+btrfs-assistant
 python-terminaltexteffects
-bt-dualboot
-bibata-cursor-theme-bin
-vencord-hook
+
+# Name: Desktop Applications
+code
+discord
+docker
+docker-compose
+zen-browser-bin
+loupe
+video-trimmer
+celluloid
+gnome-disk-utility
+inkscape
+claude-desktop
+chatgpt-desktop-bin
+spotify-launcher
+yt-dlp
+rclone
+
+# Name: Gaming
+gamescope
+jellyfin-server
+jellyfin-web
+prismlauncher
+steam
+proton-cachyos-slr
 minecraft-launcher
 bedrock-on-linux-bin
 unityhub
-opencode-desktop-bin
+
+# Name: AI & Utilities
+llama-cpp
+ggml-cuda
+spicetify-cli
+bt-dualboot
+bibata-cursor-theme-bin
+vencord-hook
 fcitx5-hazkey-bin
 hazkey-zenzai-model
-spicetify-cli
+opencode-desktop-bin
