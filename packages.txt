@@ -147,4 +147,3 @@ opencode-desktop-bin
 fcitx5-hazkey-bin
 hazkey-zenzai-model
 spicetify-cli
-spicetify-marketplace-bin
