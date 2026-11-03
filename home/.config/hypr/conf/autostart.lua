@@ -7,6 +7,7 @@ hl.on("hyprland.start", function()
     hl.exec_cmd("uwsm app -- wl-paste --type image --watch cliphist store")
     hl.exec_cmd("uwsm app -- fcitx5 -d")
     hl.exec_cmd("uwsm app -- sunshine")
+    hl.exec_cmd("uwsm app -- llama-server --host 127.0.0.1 --port 8080 --models-preset ~/.config/llama.cpp/models.ini")
     hl.exec_cmd("~/.config/hypr/scripts/random_wall.sh")
 
     hl.exec_cmd("thunar --daemon")
