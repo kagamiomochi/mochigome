@@ -64,6 +64,8 @@ greetd-tuigreet
 snap-pac
 snapper
 reflector
+nm-connection-editor 
+network-manager-applet
 
 # Name: Fonts
 noto-fonts
