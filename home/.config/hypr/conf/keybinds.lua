@@ -38,29 +38,6 @@ local function toggle_scratchpad()
   end
 end
 
--- Identifying Terminal Emulators
-local terminals = {
-    kitty = {
-        args = "--class " .. SystemMonitor .. " --title " .. SystemMonitor,
-        exec = "-e",
-    },
-    foot = {
-        args = "--app-id " .. SystemMonitor .. " --title " .. SystemMonitor,
-        exec = "--",
-    },
-    alacritty = {
-        args = "--class " .. SystemMonitor .. " --title " .. SystemMonitor,
-        exec = "-e",
-    },
-}
-
-assert(
-    terminals[terminal],
-    "Unsupported terminal: " .. terminal
-)
-
-local t = terminals[terminal]
-
 
 -- General
 hl.bind(mainMod .. " + L",  hl.dsp.exec_cmd("loginctl lock-session"))
@@ -68,9 +45,11 @@ hl.bind(mainMod .. " + E",  hl.dsp.exec_cmd("uwsm app -- " .. fileManager))
 hl.bind(mainMod .. " + W",  hl.dsp.exec_cmd("uwsm app -- " .. browser))
 hl.bind(mainMod .. " + SHIFT + P", hl.dsp.exec_cmd("hyprpicker"))
 hl.bind(mainMod .. " + SUPER_L", hl.dsp.exec_cmd("qs ipc call launcher toggle"), { release = true })
+
+-- System Monitor
 hl.bind("CONTROL + SHIFT + ESCAPE", hl.dsp.exec_cmd(
-        "uwsm app -- " .. terminal .. " " .. t.args .. " " .. t.exec .. " " .. SystemMonitor
-    ))
+    "xdg-terminal-exec --app-id=btop --title=btop -- btop"
+))
 
 -- musicplayer
 hl.bind(mainMod .. " + M", function()
