@@ -15,8 +15,19 @@
             "output": 32768
           }
         },
+        "huihui-ai/Huihui-Qwen3.6-35B-A3B-abliterated-MTP-GGUF:Q4_K": {
+          "name": "Qwen 3.6 35B A3B Abliterated",
+          "limit": {
+            "context": 65536,
+            "output": 32768
+          }
+        },
         "prism-ml/Ternary-Bonsai-2-27B-gguf:PTQ1_0": {
-          "name": "Ternary Bonsai 2 27B"
+          "name": "Ternary Bonsai 2 27B",
+          "limit": {
+            "context": 16384,
+            "output": 8192
+          }
         }
       }
     }
